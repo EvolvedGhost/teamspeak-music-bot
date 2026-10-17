@@ -655,6 +655,10 @@ export class AudioPlayer extends EventEmitter {
     this.healthyFrames = 0;
     this.pauseFrames = 0;
     this.resumeSilenceFrames = 0;
+    this.transportRampStart = null;
+    this.transportRampEnd = null;
+    this.transportRampFrom = 1;
+    this.transportRampTo = 1;
     if (keepAlive) {
       this.frameLoopRunning = true;
       this.nextFrameTime = wasRunning ? Math.max(performance.now(), deadline - FRAME_DURATION_MS) : performance.now();
