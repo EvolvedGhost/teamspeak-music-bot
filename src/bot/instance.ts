@@ -2103,6 +2103,7 @@ export class BotInstance extends EventEmitter {
     this.isAdvancing = true;
     let started = false;
     try {
+      if (this.player.getState() !== "idle") this.player.stop(true);
       this.voteSkipUsers.clear();
       const next = this.queue.next();
       if (next) {
