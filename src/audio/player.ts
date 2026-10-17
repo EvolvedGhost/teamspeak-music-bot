@@ -596,14 +596,18 @@ export class AudioPlayer extends EventEmitter {
   }
 
   stopWithFade(): void {
-    if (this.state !== "playing" || this.externalMode) {
+    if (this.externalMode || this.state === "idle") {
       this.stop();
       return;
     }
     this.stopAfterPauseTail = true;
-    this.pauseFrames = 9;
-    this.setTransportRamp(0, 0, 5);
-    this.state = "paused";
+    if (this.state === "playing") {
+      this.pauseFrames = 9;
+      this.setTransportRamp(0, 0, 5);
+      this.state = "paused";
+    } else if (this.pauseFrames === 0) {
+      this.stop();
+    }
   }
 
   stop(keepAlive = false): void {
