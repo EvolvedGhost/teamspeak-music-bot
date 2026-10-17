@@ -209,6 +209,7 @@ export class AudioPlayer extends EventEmitter {
   private transitionSilence = false;
   private pauseFrames = 0;
   private resumeSilenceFrames = 0;
+  private stopAfterPauseTail = false;
   private transportRampStart: number | null = null;
   private transportRampEnd: number | null = null;
   private transportRampFrom = 1;
@@ -594,10 +595,22 @@ export class AudioPlayer extends EventEmitter {
     this.onExternalEnd = null;
   }
 
+  stopWithFade(): void {
+    if (this.state !== "playing" || this.externalMode) {
+      this.stop();
+      return;
+    }
+    this.stopAfterPauseTail = true;
+    this.pauseFrames = 9;
+    this.setTransportRamp(0, 0, 5);
+    this.state = "paused";
+  }
+
   stop(keepAlive = false): void {
     const wasRunning = this.frameLoopRunning;
     const deadline = this.nextFrameTime;
     this.transitionSilence = keepAlive;
+    this.stopAfterPauseTail = false;
     // 3. 递增 ID 是最有效的逻辑“隔离墙”
     this.sessionId++; 
     this.frameLoopRunning = false;
@@ -699,6 +712,10 @@ export class AudioPlayer extends EventEmitter {
           else this.emitSilenceFrame(false);
         } else {
           this.nextFrameTime = performance.now();
+          if (this.stopAfterPauseTail) {
+            this.stop();
+            return;
+          }
         }
       }
       else if (this.state === "idle" && this.transitionSilence) this.emitSilenceFrame(false);

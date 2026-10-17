@@ -1547,11 +1547,13 @@ export class BotInstance extends EventEmitter {
   private cmdStop(): string {
     // Read the current song BEFORE queue.clear() so we can tell whether the
     // sidecar needs stopping.
-    if (this.queue.current()?.platform === "spotify") {
+    const isSpotify = this.queue.current()?.platform === "spotify";
+    if (isSpotify) {
       this.spotifyController.stop();
     }
     this.currentSourceIsSpotify = false;
-    this.player.stop();
+    if (isSpotify) this.player.stop();
+    else this.player.stopWithFade();
     this.jellyfinReporter?.onStop();
     this.autoPaused = false;
     this.queue.clear();
